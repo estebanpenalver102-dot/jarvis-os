@@ -1,18 +1,22 @@
-// src/index.js — JARVIS 4.0 AI Operating System
-var __name = function(fn, name) { try { Object.defineProperty(fn, 'name', {value: name}); } catch(e) {} return fn; };
-var __name2 = __name;
-
+// src/index.js — JARVIS 4.0
+var __name = function(fn, name) { try { Object.defineProperty(fn, "name", {value: name}); } catch(e) {} return fn; };
+var __name2 = /* @__PURE__ */ __name(function(fn, name) {
+  try {
+    Object.defineProperty(fn, "name", { value: name });
+  } catch (e) {
+  }
+  return fn;
+}, "__name");
+var __name22 = __name2;
 var VERSION = "4.0.0";
 var OWNER = "Prime Essentials";
 var BUSINESSES_DEFAULT = [
-  {id:"open_road_autos",name:"Open Road Autos",type:"Automotive Dealership",icon:"\u{1F697}",color:"#ff6b35"},
-  {id:"prime_essentials",name:"Prime Essentials",type:"Operations & Brand",icon:"\u2B50",color:"#6366f1"}
+  { id: "open_road_autos", name: "Open Road Autos", type: "Automotive Dealership", icon: "\u{1F697}", color: "#ff6b35" },
+  { id: "prime_essentials", name: "Prime Essentials", type: "Operations & Brand", icon: "\u2B50", color: "#6366f1" }
 ];
-
 var AGENTS = { executive: { name: "Executive", emoji: "\u{1F9E0}", role: "Goal planning, project management, delegation, business decisions" }, researcher: { name: "Researcher", emoji: "\u{1F50D}", role: "Web research, competitive intelligence, data gathering" }, developer: { name: "Developer", emoji: "\u2699\uFE0F", role: "Code generation, debugging, system architecture, deployment" }, operations: { name: "Operations", emoji: "\u{1F4CA}", role: "Monitoring, reporting, infrastructure, workflow automation" }, sales: { name: "Sales", emoji: "\u{1F697}", role: "Lead management, customer tracking, dealership operations" }, marketing: { name: "Marketing", emoji: "\u{1F4E3}", role: "Content creation, campaigns, social media, brand management" } };
 var OR_MODELS = ["nousresearch/hermes-3-llama-3.1-405b:free", "nvidia/nemotron-3-ultra-550b-a55b:free", "openai/gpt-oss-120b:free", "meta-llama/llama-3.3-70b-instruct:free"];
 var CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-
 var TOOLS = [{ type: "function", function: { name: "web_search", description: "Search internet for current info.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "read_webpage", description: "Read full text of any URL.", parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } } }, { type: "function", function: { name: "save_memory", description: "Save fact/decision/contact permanently.", parameters: { type: "object", properties: { content: { type: "string" }, category: { type: "string", enum: ["fact", "decision", "contact", "project", "task", "business", "preference"] } }, required: ["content", "category"] } } }, { type: "function", function: { name: "recall_memory", description: "Search stored memory.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "create_project", description: "Create tracked project.", parameters: { type: "object", properties: { name: { type: "string" }, description: { type: "string" }, agent: { type: "string", enum: ["executive", "researcher", "developer", "operations", "sales", "marketing"] }, priority: { type: "string", enum: ["high", "medium", "low"] } }, required: ["name", "description"] } } }, { type: "function", function: { name: "create_task", description: "Create task under project.", parameters: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, project: { type: "string" }, priority: { type: "string", enum: ["urgent", "high", "medium", "low"] }, agent: { type: "string" } }, required: ["title", "project"] } } }, { type: "function", function: { name: "list_projects", description: "List all active projects.", parameters: { type: "object", properties: {}, required: [] } } }, { type: "function", function: { name: "code_analyze", description: "Analyze/debug/generate code.", parameters: { type: "object", properties: { task: { type: "string" }, code: { type: "string" }, language: { type: "string" } }, required: ["task"] } } }];
 async function kv(e, k) {
   try {
@@ -23,6 +27,7 @@ async function kv(e, k) {
 }
 __name(kv, "kv");
 __name2(kv, "kv");
+__name22(kv, "kv");
 async function kvs(e, k, v, o = {}) {
   try {
     await e.KV.put(k, JSON.stringify(v), o);
@@ -33,6 +38,7 @@ async function kvs(e, k, v, o = {}) {
 }
 __name(kvs, "kvs");
 __name2(kvs, "kvs");
+__name22(kvs, "kvs");
 async function saveMem(e, content, cat, uid = "global") {
   const id = `m_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
   await kvs(e, `mem:${id}`, { id, content, category: cat, uid, created: (/* @__PURE__ */ new Date()).toISOString() });
@@ -43,6 +49,7 @@ async function saveMem(e, content, cat, uid = "global") {
 }
 __name(saveMem, "saveMem");
 __name2(saveMem, "saveMem");
+__name22(saveMem, "saveMem");
 async function recallMem(e, q, uid = "global") {
   const a = await kv(e, `midx:${uid}`) || [], b = await kv(e, "midx:global") || [];
   const all = [.../* @__PURE__ */ new Set([...a, ...b])].slice(-60);
@@ -56,6 +63,7 @@ async function recallMem(e, q, uid = "global") {
 }
 __name(recallMem, "recallMem");
 __name2(recallMem, "recallMem");
+__name22(recallMem, "recallMem");
 async function createProj(e, d) {
   const id = `proj_${Date.now()}`;
   const p = { id, name: d.name, description: d.description, agent: d.agent || "executive", priority: d.priority || "medium", status: "active", created: (/* @__PURE__ */ new Date()).toISOString() };
@@ -67,6 +75,7 @@ async function createProj(e, d) {
 }
 __name(createProj, "createProj");
 __name2(createProj, "createProj");
+__name22(createProj, "createProj");
 async function listProjs(e) {
   const idx = await kv(e, "pidx") || [];
   const out = [];
@@ -78,6 +87,7 @@ async function listProjs(e) {
 }
 __name(listProjs, "listProjs");
 __name2(listProjs, "listProjs");
+__name22(listProjs, "listProjs");
 async function createTask(e, d) {
   const id = `task_${Date.now()}`;
   const t = { id, title: d.title, description: d.description || "", project: d.project, priority: d.priority || "medium", agent: d.agent || "executive", status: "pending", created: (/* @__PURE__ */ new Date()).toISOString() };
@@ -89,6 +99,7 @@ async function createTask(e, d) {
 }
 __name(createTask, "createTask");
 __name2(createTask, "createTask");
+__name22(createTask, "createTask");
 async function listTasks(e, f = {}) {
   const idx = await kv(e, "tidx") || [];
   const out = [];
@@ -100,6 +111,7 @@ async function listTasks(e, f = {}) {
 }
 __name(listTasks, "listTasks");
 __name2(listTasks, "listTasks");
+__name22(listTasks, "listTasks");
 async function runTool(name, args, e, uid) {
   try {
     switch (name) {
@@ -147,6 +159,7 @@ Full sandbox: v3.1`;
 }
 __name(runTool, "runTool");
 __name2(runTool, "runTool");
+__name22(runTool, "runTool");
 async function callOR(key, msgs, idx = 0) {
   const model = OR_MODELS[Math.min(idx, OR_MODELS.length - 1)];
   const r = await fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}`, "HTTP-Referer": "https://jarvis-telegram-bot.estebanpenalver102.workers.dev", "X-Title": "Jarvis 3.0" }, body: JSON.stringify({ model, messages: msgs, tools: TOOLS, tool_choice: "auto", max_tokens: 1500 }) });
@@ -157,6 +170,7 @@ async function callOR(key, msgs, idx = 0) {
 }
 __name(callOR, "callOR");
 __name2(callOR, "callOR");
+__name22(callOR, "callOR");
 async function callCF(ai, msgs) {
   const s = msgs.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : JSON.stringify(m.content) }));
   const r = await ai.run(CF_MODEL, { messages: s, max_tokens: 800 });
@@ -164,6 +178,7 @@ async function callCF(ai, msgs) {
 }
 __name(callCF, "callCF");
 __name2(callCF, "callCF");
+__name22(callCF, "callCF");
 async function callLLM(e, msgs, idx = 0) {
   const key = e.OPENROUTER_KEY;
   if (key && idx < OR_MODELS.length) {
@@ -178,6 +193,7 @@ async function callLLM(e, msgs, idx = 0) {
 }
 __name(callLLM, "callLLM");
 __name2(callLLM, "callLLM");
+__name22(callLLM, "callLLM");
 async function runAgent(e, uid, text, atype = "executive") {
   const hist = await kv(e, `hist:${uid}`) || [];
   const msgs = [{ role: "system", content: SYS(atype) }, ...hist.slice(-18).map((m) => ({ role: m.role, content: m.content })), { role: "user", content: text }];
@@ -202,6 +218,7 @@ async function runAgent(e, uid, text, atype = "executive") {
 }
 __name(runAgent, "runAgent");
 __name2(runAgent, "runAgent");
+__name22(runAgent, "runAgent");
 async function tgSend(token, chatId, text) {
   const chunks = [];
   let t = text;
@@ -217,12 +234,14 @@ async function tgSend(token, chatId, text) {
 }
 __name(tgSend, "tgSend");
 __name2(tgSend, "tgSend");
+__name22(tgSend, "tgSend");
 async function tgTyping(token, chatId) {
   await fetch(`https://api.telegram.org/bot${token}/sendChatAction`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: chatId, action: "typing" }) }).catch(() => {
   });
 }
 __name(tgTyping, "tgTyping");
 __name2(tgTyping, "tgTyping");
+__name22(tgTyping, "tgTyping");
 function detectAgent(t) {
   const l = t.toLowerCase();
   if (/research|search|find|what is|look up|news/.test(l)) return "researcher";
@@ -234,6 +253,7 @@ function detectAgent(t) {
 }
 __name(detectAgent, "detectAgent");
 __name2(detectAgent, "detectAgent");
+__name22(detectAgent, "detectAgent");
 async function handleTg(e, msg) {
   const chatId = msg.chat.id, uid = String(msg.from?.id || chatId), text = msg.text || "";
   if (!text) return;
@@ -324,6 +344,7 @@ _${ag.emoji} ${ag.name} \xB7 ${(model || "").split("/").pop() || "AI"} \xB7 ${st
 }
 __name(handleTg, "handleTg");
 __name2(handleTg, "handleTg");
+__name22(handleTg, "handleTg");
 async function pollTg(e) {
   const off = await kv(e, "tg_off") || 0;
   const r = await fetch(`https://api.telegram.org/bot${e.BOT_TOKEN}/getUpdates?offset=${off}&timeout=5&limit=10`);
@@ -338,6 +359,7 @@ async function pollTg(e) {
 }
 __name(pollTg, "pollTg");
 __name2(pollTg, "pollTg");
+__name22(pollTg, "pollTg");
 function cors(r) {
   r.headers.set("Access-Control-Allow-Origin", "*");
   r.headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -346,6 +368,7 @@ function cors(r) {
 }
 __name(cors, "cors");
 __name2(cors, "cors");
+__name22(cors, "cors");
 async function runCodePiston(language, code_str) {
   const compilers = {
     python: "cpython-3.12.7",
@@ -381,6 +404,7 @@ async function runCodePiston(language, code_str) {
   }
 }
 __name(runCodePiston, "runCodePiston");
+__name2(runCodePiston, "runCodePiston");
 async function githubAPI(action, args, token) {
   if (!token) return { error: "Set GITHUB_TOKEN in Cloudflare Worker vars (Dashboard \u2192 Workers \u2192 Your Worker \u2192 Settings \u2192 Variables)" };
   const h = { "Authorization": "token " + token, "Content-Type": "application/json", "Accept": "application/vnd.github.v3+json", "User-Agent": "Jarvis-3.1" };
@@ -424,92 +448,99 @@ async function githubAPI(action, args, token) {
   }
 }
 __name(githubAPI, "githubAPI");
-
-// ── JARVIS 4.0 — AUTH ──
+__name2(githubAPI, "githubAPI");
 async function generateLoginToken(e) {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
-  const token = Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
-  await e.KV.put('auth:'+token, JSON.stringify({user:'prime_essentials',created:Date.now(),expires:Date.now()+30*24*60*60*1000}), {expirationTtl:30*24*60*60});
+  const token = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  await e.KV.put("auth:" + token, JSON.stringify({ user: "prime_essentials", created: Date.now(), expires: Date.now() + 30 * 24 * 60 * 60 * 1e3 }), { expirationTtl: 30 * 24 * 60 * 60 });
   return token;
 }
-__name(generateLoginToken,"generateLoginToken");
-
-// ── BUSINESSES ──
+__name(generateLoginToken, "generateLoginToken");
+__name2(generateLoginToken, "generateLoginToken");
 async function getBusinesses(e) {
-  const stored = await e.KV.get('businesses',{type:'json'});
-  if(stored && stored.length) return stored;
-  await e.KV.put('businesses', JSON.stringify(BUSINESSES_DEFAULT));
+  const stored = await e.KV.get("businesses", { type: "json" });
+  if (stored && stored.length) return stored;
+  await e.KV.put("businesses", JSON.stringify(BUSINESSES_DEFAULT));
   return BUSINESSES_DEFAULT;
 }
-__name(getBusinesses,"getBusinesses");
-
+__name(getBusinesses, "getBusinesses");
+__name2(getBusinesses, "getBusinesses");
 async function addBusiness(e, biz) {
   const list = await getBusinesses(e);
-  const nb = {id:biz.name.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now(), ...biz, created:Date.now()};
+  const nb = { id: biz.name.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now(), ...biz, created: Date.now() };
   list.push(nb);
-  await e.KV.put('businesses', JSON.stringify(list));
+  await e.KV.put("businesses", JSON.stringify(list));
   return nb;
 }
-__name(addBusiness,"addBusiness");
-
-// ── AGENTS STATE ──
+__name(addBusiness, "addBusiness");
+__name2(addBusiness, "addBusiness");
 async function getAgentsState(e) {
-  return Promise.all(Object.entries(AGENTS).map(async ([key,info])=>{
-    const task = await e.KV.get('agent:task:'+key,{type:'json'});
-    return {id:key, name:info.name, emoji:info.emoji, role:info.role, status:task?'working':'idle', currentTask:task||null};
+  return Promise.all(Object.entries(AGENTS).map(async ([key, info]) => {
+    const task = await e.KV.get("agent:task:" + key, { type: "json" });
+    return { id: key, name: info.name, emoji: info.emoji, role: info.role, status: task ? "working" : "idle", currentTask: task || null };
   }));
 }
-__name(getAgentsState,"getAgentsState");
-
+__name(getAgentsState, "getAgentsState");
+__name2(getAgentsState, "getAgentsState");
 async function pushTaskToAgent(e, agentId, taskText) {
-  const rec = {id:crypto.randomUUID(), task:taskText, agentId, status:'running', created:Date.now()};
-  await e.KV.put('agent:task:'+agentId, JSON.stringify(rec));
-  const hist = JSON.parse(await e.KV.get('agent:history:'+agentId)||'[]');
+  const rec = { id: crypto.randomUUID(), task: taskText, agentId, status: "running", created: Date.now() };
+  await e.KV.put("agent:task:" + agentId, JSON.stringify(rec));
+  const hist = JSON.parse(await e.KV.get("agent:history:" + agentId) || "[]");
   hist.unshift(rec);
-  await e.KV.put('agent:history:'+agentId, JSON.stringify(hist.slice(0,20)));
+  await e.KV.put("agent:history:" + agentId, JSON.stringify(hist.slice(0, 20)));
   return rec;
 }
-__name(pushTaskToAgent,"pushTaskToAgent");
-
-// ── MODELS ──
-async function getModels(e) { return JSON.parse(await e.KV.get('models')||'[]'); }
-__name(getModels,"getModels");
-
+__name(pushTaskToAgent, "pushTaskToAgent");
+__name2(pushTaskToAgent, "pushTaskToAgent");
+async function getModels(e) {
+  return JSON.parse(await e.KV.get("models") || "[]");
+}
+__name(getModels, "getModels");
+__name2(getModels, "getModels");
 async function deployGitHubModel(url, e) {
   const m = url.match(/github\.com\/([^\/\s]+)\/([^\/\s]+)/);
-  if(!m) return {error:'Invalid GitHub URL'};
-  const [,owner,repo] = m;
+  if (!m) return { error: "Invalid GitHub URL" };
+  const [, owner, repo] = m;
   try {
-    const r = await fetch('https://api.github.com/repos/'+owner+'/'+repo,{headers:{'User-Agent':'Jarvis-4.0'}});
-    if(!r.ok) return {error:'Repo not found'};
+    const r = await fetch("https://api.github.com/repos/" + owner + "/" + repo, { headers: { "User-Agent": "Jarvis-4.0" } });
+    if (!r.ok) return { error: "Repo not found" };
     const d = await r.json();
     const model = {
-      id:(owner+'_'+repo).toLowerCase().replace(/[^a-z0-9_]/g,'_'),
-      name:d.name, owner, repo, description:d.description||'',
-      stars:d.stargazers_count, url:d.html_url, language:d.language||'', installed:Date.now(), status:'active'
+      id: (owner + "_" + repo).toLowerCase().replace(/[^a-z0-9_]/g, "_"),
+      name: d.name,
+      owner,
+      repo,
+      description: d.description || "",
+      stars: d.stargazers_count,
+      url: d.html_url,
+      language: d.language || "",
+      installed: Date.now(),
+      status: "active"
     };
     const models = await getModels(e);
-    const idx = models.findIndex(x=>x.id===model.id);
-    if(idx>=0) models[idx]=model; else models.push(model);
-    await e.KV.put('models', JSON.stringify(models));
+    const idx = models.findIndex((x) => x.id === model.id);
+    if (idx >= 0) models[idx] = model;
+    else models.push(model);
+    await e.KV.put("models", JSON.stringify(models));
     return model;
-  } catch(err) { return {error:err.message}; }
+  } catch (err) {
+    return { error: err.message };
+  }
 }
-__name(deployGitHubModel,"deployGitHubModel");
-
-// ── SCREEN ──
+__name(deployGitHubModel, "deployGitHubModel");
+__name2(deployGitHubModel, "deployGitHubModel");
 async function createScreenTask(taskDesc, e) {
   const id = crypto.randomUUID();
-  const task = {id, description:taskDesc, status:'pending', created:Date.now()};
-  await e.KV.put('screen:'+id, JSON.stringify(task), {expirationTtl:3600});
-  const list = JSON.parse(await e.KV.get('screen:list')||'[]');
-  list.unshift({id, description:taskDesc, created:Date.now(), status:'pending'});
-  await e.KV.put('screen:list', JSON.stringify(list.slice(0,10)));
+  const task = { id, description: taskDesc, status: "pending", created: Date.now() };
+  await e.KV.put("screen:" + id, JSON.stringify(task), { expirationTtl: 3600 });
+  const list = JSON.parse(await e.KV.get("screen:list") || "[]");
+  list.unshift({ id, description: taskDesc, created: Date.now(), status: "pending" });
+  await e.KV.put("screen:list", JSON.stringify(list.slice(0, 10)));
   return task;
 }
-__name(createScreenTask,"createScreenTask");
-
+__name(createScreenTask, "createScreenTask");
+__name2(createScreenTask, "createScreenTask");
 function getDashboard() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -961,10 +992,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="card">
       <div class="section-title">🔗 Browser Extension</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px">
-        Install the Jarvis Bridge to allow direct screen control via your own browser and logins.
+        Install the SureThing Bridge Chrome extension to allow Jarvis direct control of your browser — inherits your logins, cookies, and IP. Required for <strong>Take Over My Screen</strong>.
       </div>
       <div style="display:flex;gap:10px">
-        <a href="https://surething.io/bridge" target="_blank" class="btn-act" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+        <a href="https://chromewebstore.google.com/detail/surething-bridge/oaijhlcfmhhpkcgppfkmkggkkdamdemd" target="_blank" class="btn-act" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">
           Install Bridge Extension →
         </a>
         <button class="btn-sm btn-outline" onclick="testBridge()">Test Connection</button>
@@ -1272,6 +1303,21 @@ async function loadScreenSessions() {
 }
 
 function testBridge() {
+  // Try to detect SureThing Bridge
+  if(typeof chrome !== 'undefined' && chrome.runtime) {
+    toast('Checking for SureThing Bridge...','');
+    // Try messaging the extension
+    try {
+      chrome.runtime.sendMessage('oaijhlcfmhhpkcgppfkmkggkkdamdemd', {type:'ping'}, resp => {
+        if(chrome.runtime.lastError) { toast('Bridge not detected. Please install from the link above.','error'); }
+        else { toast('✅ SureThing Bridge detected and active!','success'); }
+      });
+    } catch(e) { toast('Bridge not detected. Install from the link above.','error'); }
+  } else {
+    toast('Bridge not detected. Please use Chrome and install from the link above.','error');
+  }
+}
+function _testBridge_old() {
   toast('Testing bridge connection...');
   setTimeout(()=>toast('Bridge not detected. Install from the link above.','error'),1000);
 }
@@ -1338,127 +1384,204 @@ init();
 </html>
 `;
 }
-__name(getDashboard,"getDashboard");
-
-function getLoginPage(token, confirmed) {
-  return `<!DOCTYPE html><html><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Jarvis — Authentication</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#e2e8f0;font-family:-apple-system,sans-serif;
-  display:flex;align-items:center;justify-content:center;min-height:100vh}
-.c{background:#12121a;border:1px solid #1e1e2e;border-radius:16px;padding:48px;max-width:400px;width:100%;text-align:center}
-h1{font-size:22px;font-weight:700;margin:12px 0 8px}
-p{color:#94a3b8;margin-bottom:24px;font-size:14px}
-.btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff;
-  padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:100%}
-.ok{background:#0f2a1a;border:1px solid #16a34a;border-radius:10px;padding:20px;color:#4ade80}
-</style></head><body><div class="c">
-<div style="font-size:56px">⬛</div>
-<h1>Jarvis Authentication</h1>
-${confirmed?
-  '<div class="ok">✅ Connected! Jarvis is active.<br><br><a href="/dashboard" style="color:#4ade80;font-weight:700">Open Dashboard →</a></div>':
-  '<p>Click <strong>Done</strong> to activate your session and connect Jarvis to your backends.</p><form method="POST"><input type="hidden" name="token" value="'+token+'"><button class="btn" type="submit">✓ Done — Activate Jarvis</button></form>'
-}</div></body></html>`;
-}
-__name(getLoginPage,"getLoginPage");
-
+__name(getDashboard, "getDashboard");
+__name2(getDashboard, "getDashboard");
+__name(getLoginPage, "getLoginPage");
+__name2(getLoginPage, "getLoginPage");
 async function handleAPI(path, req, e) {
-  const uid = 'prime_essentials';
+  const uid = "prime_essentials";
   if (path === "/api/status") {
-    const [ps,ts,mi,li] = await Promise.all([e.KV.list({prefix:"project:"}),e.KV.list({prefix:"task:"}),e.KV.list({prefix:"mem:"}),e.KV.list({prefix:"log:"})]);
-    return cors(new Response(JSON.stringify({version:VERSION,status:"online",projects:ps.keys.length,tasks:ts.keys.length,memory:mi.keys.length,logs:li.keys.length,agents:Object.keys(AGENTS).length,models:OR_MODELS.length+1,apps:APP_COUNT}),{headers:{"Content-Type":"application/json"}}));
+    const [ps, ts, mi, li] = await Promise.all([e.KV.list({ prefix: "project:" }), e.KV.list({ prefix: "task:" }), e.KV.list({ prefix: "mem:" }), e.KV.list({ prefix: "log:" })]);
+    return cors(new Response(JSON.stringify({ version: VERSION, status: "online", projects: ps.keys.length, tasks: ts.keys.length, memory: mi.keys.length, logs: li.keys.length, agents: Object.keys(AGENTS).length, models: OR_MODELS.length + 1, apps: APP_COUNT }), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/projects" && req.method === "GET") {
-    const list = await e.KV.list({prefix:"project:"});
-    const ps = await Promise.all(list.keys.map(k=>e.KV.get(k.name,{type:"json"})));
-    return cors(new Response(JSON.stringify(ps.filter(Boolean)),{headers:{"Content-Type":"application/json"}}));
+    const list = await e.KV.list({ prefix: "project:" });
+    const ps = await Promise.all(list.keys.map((k) => e.KV.get(k.name, { type: "json" })));
+    return cors(new Response(JSON.stringify(ps.filter(Boolean)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/projects" && req.method === "POST") {
     const data = await req.json();
     const p = await createProject(e, data);
-    return cors(new Response(JSON.stringify(p),{status:201,headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(p), { status: 201, headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/tasks" && req.method === "GET") {
-    const list = await e.KV.list({prefix:"task:"});
-    const ts = await Promise.all(list.keys.map(k=>e.KV.get(k.name,{type:"json"})));
-    return cors(new Response(JSON.stringify(ts.filter(Boolean)),{headers:{"Content-Type":"application/json"}}));
+    const list = await e.KV.list({ prefix: "task:" });
+    const ts = await Promise.all(list.keys.map((k) => e.KV.get(k.name, { type: "json" })));
+    return cors(new Response(JSON.stringify(ts.filter(Boolean)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/tasks" && req.method === "POST") {
     const data = await req.json();
     const t = await createTask(e, data);
-    return cors(new Response(JSON.stringify(t),{status:201,headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(t), { status: 201, headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/memory") {
-    const q = new URL(req.url).searchParams.get("q")||"project";
-    const items = await recallMem(e,q,uid);
-    return cors(new Response(JSON.stringify(items),{headers:{"Content-Type":"application/json"}}));
+    const q = new URL(req.url).searchParams.get("q") || "project";
+    const items = await recallMem(e, q, uid);
+    return cors(new Response(JSON.stringify(items), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/businesses" && req.method === "GET") {
-    return cors(new Response(JSON.stringify(await getBusinesses(e)),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(await getBusinesses(e)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/businesses" && req.method === "POST") {
-    const data = await req.json().catch(()=>({}));
-    return cors(new Response(JSON.stringify(await addBusiness(e, data)),{status:201,headers:{"Content-Type":"application/json"}}));
+    const data = await req.json().catch(() => ({}));
+    return cors(new Response(JSON.stringify(await addBusiness(e, data)), { status: 201, headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/agents") {
-    return cors(new Response(JSON.stringify(await getAgentsState(e)),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(await getAgentsState(e)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/push-task" && req.method === "POST") {
-    const data = await req.json().catch(()=>({}));
-    return cors(new Response(JSON.stringify(await pushTaskToAgent(e, data.agentId||'executive', data.task||'')),{status:201,headers:{"Content-Type":"application/json"}}));
+    const data = await req.json().catch(() => ({}));
+    return cors(new Response(JSON.stringify(await pushTaskToAgent(e, data.agentId || "executive", data.task || "")), { status: 201, headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/agent-history") {
-    const agentId = new URL(req.url).searchParams.get('agent')||'executive';
-    return cors(new Response(JSON.stringify(JSON.parse(await e.KV.get('agent:history:'+agentId)||'[]')),{headers:{"Content-Type":"application/json"}}));
+    const agentId = new URL(req.url).searchParams.get("agent") || "executive";
+    return cors(new Response(JSON.stringify(JSON.parse(await e.KV.get("agent:history:" + agentId) || "[]")), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/models") {
-    return cors(new Response(JSON.stringify(await getModels(e)),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(await getModels(e)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/deploy-github" && req.method === "POST") {
-    const data = await req.json().catch(()=>({}));
-    return cors(new Response(JSON.stringify(await deployGitHubModel(data.url||'', e)),{headers:{"Content-Type":"application/json"}}));
+    const data = await req.json().catch(() => ({}));
+    return cors(new Response(JSON.stringify(await deployGitHubModel(data.url || "", e)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/screen" && req.method === "GET") {
-    return cors(new Response(JSON.stringify(JSON.parse(await e.KV.get('screen:list')||'[]')),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(JSON.parse(await e.KV.get("screen:list") || "[]")), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/screen" && req.method === "POST") {
-    const data = await req.json().catch(()=>({}));
-    return cors(new Response(JSON.stringify(await createScreenTask(data.task||'', e)),{status:201,headers:{"Content-Type":"application/json"}}));
+    const data = await req.json().catch(() => ({}));
+    return cors(new Response(JSON.stringify(await createScreenTask(data.task || "", e)), { status: 201, headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/execute" && req.method === "POST") {
-    const body = await req.json().catch(()=>({}));
-    const result = await runCodePiston(body.language||'python3', body.code||'');
-    result.engine = 'wandbox';
-    return cors(new Response(JSON.stringify(result),{headers:{"Content-Type":"application/json"}}));
+    const body = await req.json().catch(() => ({}));
+    const result = await runCodePiston(body.language || "python3", body.code || "");
+    result.engine = "wandbox";
+    return cors(new Response(JSON.stringify(result), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/github" && req.method === "POST") {
-    const body = await req.json().catch(()=>({}));
-    return cors(new Response(JSON.stringify(await githubAPI(body.action, body, e.GITHUB_TOKEN)),{headers:{"Content-Type":"application/json"}}));
+    const body = await req.json().catch(() => ({}));
+    return cors(new Response(JSON.stringify(await githubAPI(body.action, body, e.GITHUB_TOKEN)), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/apps") {
-    return cors(new Response(JSON.stringify(APP_CATALOG),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify(APP_CATALOG), { headers: { "Content-Type": "application/json" } }));
+  }
+  if (path === "/api/health-check") {
+    return cors(new Response(JSON.stringify(await BRAIN_healthCheck(e)),{headers:{"Content-Type":"application/json"}}));
+  }
+  if (path === "/api/errors") {
+    const errors = JSON.parse(await e.KV.get('system:errors')||'[]');
+    return cors(new Response(JSON.stringify({errors:errors.slice(0,20),analysis:await BRAIN_analyze(e)}),{headers:{"Content-Type":"application/json"}}));
+  }
+  if (path === "/api/self-repair" && req.method === "POST") {
+    const analysis = await BRAIN_analyze(e);
+    return cors(new Response(JSON.stringify({repairs:analysis?await BRAIN_selfRepair(e,analysis):['No issues'],analysis}),{headers:{"Content-Type":"application/json"}}));
   }
   if (path === "/api/auth/generate" && req.method === "POST") {
     const token = await generateLoginToken(e);
-    return cors(new Response(JSON.stringify({token,url:'https://jarvis-telegram-bot.estebanpenalver102.workers.dev/login?token='+token}),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify({ token, url: "https://jarvis-telegram-bot.estebanpenalver102.workers.dev/login?token=" + token }), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/chat" && req.method === "POST") {
     const { message, agent } = await req.json();
     const atype = agent || detectAgent(message);
     const { reply, model, steps } = await runAgent(e, uid, message, atype);
     await pushTaskToAgent(e, atype, message);
-    return cors(new Response(JSON.stringify({reply,model,steps,agent:atype}),{headers:{"Content-Type":"application/json"}}));
+    return cors(new Response(JSON.stringify({ reply, model, steps, agent: atype }), { headers: { "Content-Type": "application/json" } }));
   }
-  return cors(new Response("Not found",{status:404}));
+  return cors(new Response("Not found", { status: 404 }));
 }
-__name(handleAPI,"handleAPI");
+__name(handleAPI, "handleAPI");
+__name2(handleAPI, "handleAPI");
+// ══════════════════════════════════════════
+// JARVIS SELF-HEALING BRAIN v4.0
+// ══════════════════════════════════════════
+async function BRAIN_logError(e, endpoint, error) {
+  try {
+    const log = JSON.parse(await e.KV.get('system:errors')||'[]');
+    log.unshift({ts:Date.now(), endpoint, error:String(error).slice(0,500)});
+    await e.KV.put('system:errors', JSON.stringify(log.slice(0,100)));
+  } catch(_){}
+}
+async function BRAIN_healthCheck(e) {
+  const t = Date.now(), c = {kv:'?', openrouter:'?', github:'?'};
+  try { await e.KV.put('system:ping','pong'); c.kv='ok'; } catch(err){c.kv='fail';}
+  try { if(e.OPENROUTER_KEY){const r=await fetch('https://openrouter.ai/api/v1/models',{headers:{'Authorization':'Bearer '+e.OPENROUTER_KEY}});c.openrouter=r.ok?'ok':'fail:'+r.status;} } catch(err){c.openrouter='fail';}
+  try { if(e.GITHUB_TOKEN){const r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+e.GITHUB_TOKEN,'User-Agent':'Jarvis-4.0'}});c.github=r.ok?'ok':'fail:'+r.status;} else c.github='no_token'; } catch(err){c.github='fail';}
+  c.uptime_ms=Date.now()-t; c.version=VERSION; c.ts=new Date().toISOString();
+  return c;
+}
+async function BRAIN_analyze(e) {
+  const errors = JSON.parse(await e.KV.get('system:errors')||'[]');
+  const recent = errors.filter(err=>Date.now()-err.ts<60*60*1000);
+  if(!recent.length) return null;
+  const summary={};
+  for(const err of recent){const k=err.endpoint||'unknown';summary[k]=(summary[k]||0)+1;}
+  return {total:recent.length,byEndpoint:summary,mostRecentError:errors[0],recommendation:recent.length>10?'critical':recent.length>5?'warning':'normal'};
+}
+async function BRAIN_selfRepair(e, analysis) {
+  const repairs=[];
+  const biz=await e.KV.get('businesses',{type:'json'});
+  if(!biz||!biz.length){await e.KV.put('businesses',JSON.stringify(BUSINESSES_DEFAULT));repairs.push('Re-seeded businesses');}
+  if(analysis.recommendation==='critical'&&e.CF_API_TOKEN&&e.CF_ACCOUNT_ID&&e.GITHUB_TOKEN){
+    try {
+      const r=await fetch('https://api.github.com/repos/estebanpenalver102-dot/jarvis-os/contents/src/index.js',{headers:{'Authorization':'token '+e.GITHUB_TOKEN,'User-Agent':'Jarvis-4.0'}});
+      if(r.ok){
+        const d=await r.json();
+        const source=atob(d.content.replace(/\n/g,''));
+        const form=new FormData();
+        form.append('index.js',new Blob([source],{type:'application/javascript'}),'index.js');
+        form.append('metadata',new Blob([JSON.stringify({main_module:'index.js'})],{type:'application/json'}));
+        const dr=await fetch('https://api.cloudflare.com/client/v4/accounts/'+e.CF_ACCOUNT_ID+'/workers/scripts/jarvis-telegram-bot',{method:'PUT',headers:{'Authorization':'Bearer '+e.CF_API_TOKEN},body:form});
+        if(dr.ok){repairs.push('Auto-redeployed from GitHub');await e.KV.put('system:errors','[]');}
+      }
+    } catch(err){repairs.push('Self-redeploy attempted: '+err.message);}
+  }
+  if(repairs.length) await e.KV.put('system:repairs',JSON.stringify({ts:new Date().toISOString(),analysis,repairs}));
+  return repairs;
+}
+async function BRAIN_notify(e, msg) {
+  if(!e.BOT_TOKEN) return;
+  await tgSend(e.BOT_TOKEN, e.OWNER_CHAT_ID||'6849374826', '\u{1F916} Jarvis Brain: '+msg).catch(()=>{});
+}
+async function handleCron(e) {
+  const now=Date.now();
+  const health=await BRAIN_healthCheck(e);
+  await e.KV.put('system:health',JSON.stringify(health));
+  const analysis=await BRAIN_analyze(e);
+  if(analysis&&(analysis.recommendation==='critical'||analysis.recommendation==='warning')){
+    const repairs=await BRAIN_selfRepair(e,analysis);
+    if(repairs.length) await BRAIN_notify(e,'Auto-repaired: '+repairs.join(', '));
+  }
+  const lb=parseInt(await e.KV.get('system:last_backup')||'0');
+  if(now-lb>60*60*1000){await e.KV.put('system:last_backup',String(now));await e.KV.put('system:last_seen',new Date().toISOString());}
+  try {
+    const sl=JSON.parse(await e.KV.get('system:sessions')||'[]');
+    for(const tok of sl){const sess=await e.KV.get('auth:'+tok,{type:'json'});if(sess&&sess.expires-now<7*24*60*60*1000){sess.expires=now+365*24*60*60*1000;await e.KV.put('auth:'+tok,JSON.stringify(sess),{expirationTtl:365*24*60*60});}}
+  } catch(_){}
+}
 
+function getLoginPage(token, confirmed) {
+  return `<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jarvis \u2014 Authentication</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#e2e8f0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.c{background:#12121a;border:1px solid #1e1e2e;border-radius:16px;padding:48px;max-width:400px;width:100%;text-align:center}
+h1{font-size:22px;font-weight:700;margin:12px 0 8px}
+p{color:#94a3b8;margin-bottom:24px;font-size:14px;line-height:1.6}
+.btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:100%}
+.ok{background:#0f2a1a;border:1px solid #16a34a;border-radius:10px;padding:20px;color:#4ade80}
+</style></head><body><div class="c">
+<div style="font-size:52px">\u2B1B</div>
+<h1>Jarvis Authentication</h1>
+${confirmed?
+  '<div class="ok">\u2705 Authenticated! Jarvis is active and self-managing.<br><br><a href="/dashboard" style="color:#4ade80;font-weight:700">Open Dashboard \u2192</a></div>':
+  '<p>Click <strong>Done</strong> to activate your session. Jarvis will self-manage from here \u2014 no expiry.</p><form method="POST"><input type="hidden" name="token" value="'+token+'"><button class="btn" type="submit">\u2713 Done \u2014 Activate Jarvis</button></form>'
+}</div></body></html>`;
+}
 
 var index_default = { async fetch(req, e) {
   const url = new URL(req.url);
   const path = url.pathname;
-  if (req.method === "OPTIONS") return cors(new Response(null, { status: 204 }));
+  if (req.method === "OPTIONS") return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"GET,POST,PATCH,PUT,DELETE,OPTIONS","Access-Control-Allow-Headers":"Content-Type"}});
   if (path === "/" || path === "/dashboard") return new Response(getDashboard(), { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-store" } });
   if (path === "/login") {
     if (req.method === "GET") {
@@ -1471,23 +1594,21 @@ var index_default = { async fetch(req, e) {
       const session = await e.KV.get('auth:'+token,{type:'json'});
       if(!session) return new Response(getLoginPage(token, false), { headers: { "Content-Type": "text/html;charset=utf-8" } });
       const headers = new Headers({ "Content-Type": "text/html;charset=utf-8" });
-      headers.append("Set-Cookie", "jarvis_session="+token+"; Path=/; Max-Age=2592000; SameSite=Lax");
+      headers.append("Set-Cookie", "jarvis_session="+token+"; Path=/; Max-Age=31536000; SameSite=Lax");
+      const sl=JSON.parse(await e.KV.get('system:sessions')||'[]');
+      if(!sl.includes(token)){sl.push(token);await e.KV.put('system:sessions',JSON.stringify(sl.slice(-100)));}
       return new Response(getLoginPage(token, true), { headers });
     }
   }
-  if (path.startsWith("/api/")) return handleAPI(path, req, e);
-  if (path === "/whatsapp" && req.method === "GET") {
-    const params = url.searchParams;
-    if(params.get("hub.verify_token") === (e.WHATSAPP_VERIFY||"jarvis4")) return new Response(params.get("hub.challenge")||"ok");
-    return new Response("Forbidden",{status:403});
-  }
-  if (path === "/whatsapp" && req.method === "POST") {
-    const body = await req.json().catch(()=>({}));
-    e.ctx?.waitUntil(processWhatsApp(body, e));
-    return new Response("ok");
+  if (path.startsWith("/api/")) {
+    try { return await handleAPI(path, req, e); }
+    catch(err) {
+      await BRAIN_logError(e, path, err.message).catch(()=>{});
+      return new Response(JSON.stringify({error:'Internal error',message:err.message}),{status:500,headers:{"Content-Type":"application/json","Access-Control-Allow-Origin":"*"}});
+    }
   }
   if (path === "/telegram") {
-    const body = await req.json().catch(() => ({}));
+    const body = await req.json().catch(()=>({}));
     const msg = body?.message || body?.edited_message;
     if (msg && e.BOT_TOKEN) {
       const chatId = msg.chat?.id;
@@ -1495,19 +1616,18 @@ var index_default = { async fetch(req, e) {
       if (chatId) {
         const uid2 = String(chatId);
         const history = JSON.parse(await e.KV.get("hist:" + uid2) || "[]");
-        await sendTyping(chatId, e.BOT_TOKEN);
-        const { reply, model } = await runAgent(e, uid2, text, detectAgent(text), history.slice(-10));
+        await tgTyping(e.BOT_TOKEN, chatId);
+        const { reply } = await runAgent(e, uid2, text, detectAgent(text));
         history.push({ role: "user", content: text }, { role: "assistant", content: reply });
         await e.KV.put("hist:" + uid2, JSON.stringify(history.slice(-20)));
-        await sendTelegramMessage(chatId, reply, e.BOT_TOKEN);
+        await tgSend(e.BOT_TOKEN, chatId, reply);
       }
     }
     return new Response("ok");
   }
-  if (path === "/health") return new Response(JSON.stringify({ status: "Jarvis 4.0", version: VERSION, ts: new Date().toISOString() }), { headers: { "Content-Type": "application/json" } });
+  if (path === "/health") return new Response(JSON.stringify({ status: "Jarvis 4.0", version: VERSION, ts: new Date().toISOString(), github: !!e.GITHUB_TOKEN }), { headers: { "Content-Type": "application/json" } });
   return new Response("Not found", { status: 404 });
 }, async scheduled(event, e, ctx) {
   ctx.waitUntil(handleCron(e));
 } };
-
 export { index_default as default };
