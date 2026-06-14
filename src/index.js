@@ -8,14 +8,17 @@ var __name2 = /* @__PURE__ */ __name(function(fn, name) {
   return fn;
 }, "__name");
 var __name22 = __name2;
-var VERSION = "4.0.0";
-var OWNER = "Prime Essentials";
+var VERSION = "5.0.0";
+var OWNER = "E";
 var BUSINESSES_DEFAULT = [
   { id: "open_road_autos", name: "Open Road Autos", type: "Automotive Dealership", icon: "\u{1F697}", color: "#ff6b35" },
   { id: "prime_essentials", name: "Prime Essentials", type: "Operations & Brand", icon: "\u2B50", color: "#6366f1" }
 ];
 var AGENTS = { executive: { name: "Executive", emoji: "\u{1F9E0}", role: "Goal planning, project management, delegation, business decisions" }, researcher: { name: "Researcher", emoji: "\u{1F50D}", role: "Web research, competitive intelligence, data gathering" }, developer: { name: "Developer", emoji: "\u2699\uFE0F", role: "Code generation, debugging, system architecture, deployment" }, operations: { name: "Operations", emoji: "\u{1F4CA}", role: "Monitoring, reporting, infrastructure, workflow automation" }, sales: { name: "Sales", emoji: "\u{1F697}", role: "Lead management, customer tracking, dealership operations" }, marketing: { name: "Marketing", emoji: "\u{1F4E3}", role: "Content creation, campaigns, social media, brand management" } };
-var OR_MODELS = ["nousresearch/hermes-3-llama-3.1-405b:free", "nvidia/nemotron-3-ultra-550b-a55b:free", "openai/gpt-oss-120b:free", "meta-llama/llama-3.3-70b-instruct:free"];
+// Best model first — always try smartest, fall back on credit limit / errors
+var OR_MODELS_PAID = ["anthropic/claude-sonnet-4-5","anthropic/claude-3.5-sonnet","openai/gpt-4o","openai/gpt-4-turbo"];
+var OR_MODELS_FREE = ["nousresearch/hermes-3-llama-3.1-405b:free","nvidia/nemotron-3-ultra-550b-a55b:free","openai/gpt-oss-120b:free","meta-llama/llama-3.3-70b-instruct:free"];
+var OR_MODELS = OR_MODELS_PAID.concat(OR_MODELS_FREE);
 var CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 var TOOLS = [{ type: "function", function: { name: "web_search", description: "Search internet for current info.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "read_webpage", description: "Read full text of any URL.", parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } } }, { type: "function", function: { name: "save_memory", description: "Save fact/decision/contact permanently.", parameters: { type: "object", properties: { content: { type: "string" }, category: { type: "string", enum: ["fact", "decision", "contact", "project", "task", "business", "preference"] } }, required: ["content", "category"] } } }, { type: "function", function: { name: "recall_memory", description: "Search stored memory.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "create_project", description: "Create tracked project.", parameters: { type: "object", properties: { name: { type: "string" }, description: { type: "string" }, agent: { type: "string", enum: ["executive", "researcher", "developer", "operations", "sales", "marketing"] }, priority: { type: "string", enum: ["high", "medium", "low"] } }, required: ["name", "description"] } } }, { type: "function", function: { name: "create_task", description: "Create task under project.", parameters: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, project: { type: "string" }, priority: { type: "string", enum: ["urgent", "high", "medium", "low"] }, agent: { type: "string" } }, required: ["title", "project"] } } }, { type: "function", function: { name: "list_projects", description: "List all active projects.", parameters: { type: "object", properties: {}, required: [] } } }, { type: "function", function: { name: "code_analyze", description: "Analyze/debug/generate code.", parameters: { type: "object", properties: { task: { type: "string" }, code: { type: "string" }, language: { type: "string" } }, required: ["task"] } } }];
 async function kv(e, k) {
@@ -161,12 +164,32 @@ __name(runTool, "runTool");
 __name2(runTool, "runTool");
 __name22(runTool, "runTool");
 async function callOR(key, msgs, idx = 0) {
-  const model = OR_MODELS[Math.min(idx, OR_MODELS.length - 1)];
-  const r = await fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}`, "HTTP-Referer": "https://jarvis-telegram-bot.estebanpenalver102.workers.dev", "X-Title": "Jarvis 3.0" }, body: JSON.stringify({ model, messages: msgs, tools: TOOLS, tool_choice: "auto", max_tokens: 1500 }) });
-  if (!r.ok) throw new Error(`${r.status}`);
-  const d = await r.json();
-  if (d.error) throw new Error(d.error.message);
-  return { msg: d.choices?.[0]?.message, model };
+  if(idx >= OR_MODELS.length) throw new Error("all_models_exhausted");
+  const model = OR_MODELS[idx];
+  try {
+    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+key,"HTTP-Referer":"https://jarvis-telegram-bot.estebanpenalver102.workers.dev","X-Title":"Jarvis-E"},
+      body: JSON.stringify({model, messages:msgs, tools:TOOLS, tool_choice:"auto", max_tokens:2000})
+    });
+    if(r.status===402||r.status===429) {
+      // Credit limit or rate limit — skip to next model immediately
+      console.log("Credit/rate limit on "+model+" — trying next");
+      return callOR(key, msgs, idx+1);
+    }
+    if(!r.ok) throw new Error(r.status+"");
+    const d = await r.json();
+    if(d.error) {
+      if(d.error.code===402||d.error.message?.includes("credit")||d.error.message?.includes("quota")) {
+        return callOR(key, msgs, idx+1);
+      }
+      throw new Error(d.error.message);
+    }
+    return {msg: d.choices?.[0]?.message, model};
+  } catch(ex) {
+    if(idx+1 < OR_MODELS.length) return callOR(key, msgs, idx+1);
+    throw ex;
+  }
 }
 __name(callOR, "callOR");
 __name2(callOR, "callOR");
@@ -194,24 +217,76 @@ async function callLLM(e, msgs, idx = 0) {
 __name(callLLM, "callLLM");
 __name2(callLLM, "callLLM");
 __name22(callLLM, "callLLM");
+// JARVIS system prompt factory
+function SYS(atype) {
+  const roles = {
+    executive: "Goal planning, project management, delegation, and high-level business decisions.",
+    researcher: "Deep web research, competitive intelligence, data gathering, fact verification.",
+    developer: "Code generation, debugging, system architecture, deployment, and technical problem solving.",
+    operations: "Monitoring, reporting, infrastructure management, workflow automation, and KPIs.",
+    sales: "Lead management, customer tracking, dealership operations, inventory, and CRM.",
+    marketing: "Content creation, campaigns, social media strategy, brand management, and ad copy."
+  };
+  const role = roles[atype] || roles.executive;
+  return `You are JARVIS — E's SureThing Agent. You are an advanced AI operating system built exclusively for E.
+
+IDENTITY: You work for E only. You are not an assistant for "Prime Essentials" the brand — you serve E, the person who created and owns you.
+
+ROLE (${atype}): ${role}
+
+CAPABILITIES:
+- web_search: Search internet for current information
+- read_webpage: Read any URL content  
+- save_memory: Store facts, decisions, contacts permanently
+- recall_memory: Retrieve stored knowledge
+- create_project: Create tracked projects (auto-name them if not given)
+- create_task: Create tasks under projects
+- list_projects: See all active projects
+- code_analyze: Analyze, debug, generate code
+
+LEARNING: After every task, extract and remember key insights, decisions, and patterns using save_memory.
+
+ALWAYS:
+- Use the best available intelligence — never hold back on quality
+- Auto-route tasks to the right specialist
+- Name projects yourself if E doesn't provide a name
+- Remember outcomes and build on prior knowledge
+- Be direct, capable, and decisive — E needs results, not explanations`;
+}
+
 async function runAgent(e, uid, text, atype = "executive") {
   const hist = await kv(e, `hist:${uid}`) || [];
-  const msgs = [{ role: "system", content: SYS(atype) }, ...hist.slice(-18).map((m) => ({ role: m.role, content: m.content })), { role: "user", content: text }];
+  // Inject plugins/custom code into context if any
+  const plugins = JSON.parse(await e.KV.get('system:plugins')||'[]');
+  const pluginCtx = plugins.length ? "\n\nACTIVE PLUGINS:\n"+plugins.map(p=>p.name+": "+p.code.slice(0,300)).join("\n---\n") : "";
+  // Inject recent learnings
+  const learnings = JSON.parse(await e.KV.get('brain:learnings')||'[]');
+  const learnCtx = learnings.length ? "\n\nPRIOR LEARNINGS:\n"+learnings.slice(-5).map(l=>l.insight).join("\n") : "";
+  const sysContent = SYS(atype) + pluginCtx + learnCtx;
+  const msgs = [{role:"system",content:sysContent}, ...hist.slice(-18).map(m=>({role:m.role,content:m.content})), {role:"user",content:text}];
   let steps = 0, mdl = "unknown";
-  while (steps++ < 8) {
+  while (steps++ < 10) {
     const { msg, model } = await callLLM(e, msgs);
     mdl = model;
     msgs.push(msg);
     if (!msg.tool_calls?.length) {
       const reply = msg.content || "Done.";
-      const nh = [...hist, { role: "user", content: text }, { role: "assistant", content: reply }];
+      const nh = [...hist, {role:"user",content:text}, {role:"assistant",content:reply}];
       await kvs(e, `hist:${uid}`, nh.slice(-40));
+      // Adaptive learning: extract insight from completed task
+      try {
+        const taskSummary = text.slice(0,200);
+        const insight = `[${atype}] Task "${taskSummary}" → Used model: ${mdl} → ${steps} steps`;
+        const ll = JSON.parse(await e.KV.get('brain:learnings')||'[]');
+        ll.unshift({ts:Date.now(),insight,model:mdl,agent:atype});
+        await e.KV.put('brain:learnings', JSON.stringify(ll.slice(0,200)));
+      } catch(_){}
       return { reply, model: mdl, steps };
     }
     for (const c of msg.tool_calls) {
       const args = JSON.parse(c.function.arguments || "{}");
       const res = await runTool(c.function.name, args, e, uid);
-      msgs.push({ role: "tool", tool_call_id: c.id, content: res });
+      msgs.push({role:"tool", tool_call_id:c.id, content:res});
     }
   }
   return { reply: "Max steps reached.", model: mdl, steps };
@@ -258,9 +333,9 @@ async function handleTg(e, msg) {
   const chatId = msg.chat.id, uid = String(msg.from?.id || chatId), text = msg.text || "";
   if (!text) return;
   if (text === "/start" || text === "/help") {
-    await tgSend(e.BOT_TOKEN, chatId, `*Jarvis 3.0 \u2014 AI Operating System* \u{1F9E0}
+    await tgSend(e.BOT_TOKEN, chatId, `*Jarvis 5.0 \u2014 AI Operating System* \u{1F9E0}
 
-Serving ${OWNER}.
+Serving E.
 
 *Agent Modules:*
 \u{1F9E0} Executive \u2014 planning & decisions
@@ -280,7 +355,7 @@ Auto-routing active.
   if (text === "/status") {
     const ps = await listProjs(e);
     const ts = await listTasks(e, { status: "pending" });
-    await tgSend(e.BOT_TOKEN, chatId, `*Jarvis 3.0* \u2705
+    await tgSend(e.BOT_TOKEN, chatId, `*Jarvis 5.0* \u2705
 
 *AI:* OpenRouter(4 free) \u2192 CF AI fallback
 *Models:* Hermes-3 405B\xB7Nemotron 550B\xB7GPT-OSS 120B\xB7Llama 70B
@@ -547,7 +622,7 @@ function getDashboard() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Jarvis 4.0 — AI Operating System</title>
+<title>JARVIS 5.0 — E's SureThing Agent</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a0f;--bg2:#0d0d17;--bg3:#12121f;--card:#16162a;--border:#1e1e3a;
@@ -778,8 +853,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="user-card">
       <div class="user-av">PE</div>
       <div>
-        <div class="user-name">Prime Essentials</div>
-        <div class="user-plan">Jarvis 4.0 · Live</div>
+        <div class="user-name">E's Workspace</div>
+        <div class="user-plan">JARVIS 5.0 · Live</div>
       </div>
     </div>
   </div>
@@ -809,7 +884,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       </div>
       <div id="chat-msgs">
         <div class="msg bot">
-          <div>Hi Prime Essentials! I'm Jarvis 4.0 — your AI Operating System. What would you like to work on today?</div>
+          <div>Hi E's Workspace! I'm JARVIS 5.0 — your E's SureThing Agent. What would you like to work on today?</div>
           <div class="msg-meta">🧠 Executive · Just now</div>
         </div>
       </div>
@@ -1001,7 +1076,53 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <button class="btn-sm btn-outline" onclick="testBridge()">Test Connection</button>
       </div>
     </div>
+  
+</div>
+
+<!-- PLUGINS TAB -->
+<div class="tab-pane" id="tab-plugins">
+  <h2 style="margin-bottom:16px">🔌 Plugins & Custom Code</h2>
+  <p style="color:var(--muted);margin-bottom:20px">Add custom code, API keys, or prompts that JARVIS reads and uses for every response — regardless of which model is active.</p>
+  
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+    <h3 style="margin-bottom:12px;font-size:14px;color:var(--purple)">Add Plugin / Custom Code</h3>
+    <input class="inp" id="plugin-name" placeholder="Plugin name (e.g. OpenClaw Claude, Custom Prompt)" style="margin-bottom:8px">
+    <select class="inp" id="plugin-lang" style="margin-bottom:8px">
+      <option value="text">System Prompt / Instruction</option>
+      <option value="javascript">JavaScript</option>
+      <option value="python">Python</option>
+      <option value="json">JSON Config</option>
+      <option value="api_key">API Key / Credential</option>
+    </select>
+    <textarea class="inp" id="plugin-code" rows="6" placeholder="Paste your code, prompt, or API config here. JARVIS will read and use this in every conversation." style="font-family:monospace;font-size:12px;margin-bottom:8px"></textarea>
+    <div style="display:flex;gap:8px">
+      <button class="btn-act" onclick="addPlugin()">Add Plugin</button>
+      <span style="color:var(--muted);font-size:12px;align-self:center">Or drop a .zip file to auto-install →</span>
+      <input type="file" id="plugin-zip" accept=".zip,.js,.py,.json" style="display:none" onchange="uploadPluginFile(this)">
+      <button class="btn-sm btn-outline" onclick="document.getElementById('plugin-zip').click()">📁 Upload File</button>
+    </div>
   </div>
+  
+  <div id="plugins-list">
+    <div style="color:var(--muted);text-align:center;padding:40px">Loading plugins...</div>
+  </div>
+</div>
+
+<!-- ERRORS TAB -->
+<div class="tab-pane" id="tab-errors">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h2>🔴 Error Log</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sm btn-outline" onclick="loadErrors()">🔄 Refresh</button>
+      <button class="btn-sm" style="background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b" onclick="triggerRepair()">🔧 Auto-Repair</button>
+    </div>
+  </div>
+  <div id="error-analysis" style="margin-bottom:16px"></div>
+  <div id="errors-list">
+    <div style="color:var(--muted);text-align:center;padding:40px">Loading errors...</div>
+  </div>
+</div>
+</div>
 
   <!-- APP HUB TAB -->
   <div id="tab-apps" class="tab-panel">
@@ -1379,6 +1500,109 @@ async function init() {
   } catch(e){}
 }
 init();
+
+// ── PLUGINS ──────────────────────────────────────────────────────────────────
+async function loadPlugins() {
+  const list = document.getElementById('plugins-list');
+  if(!list) return;
+  try {
+    const r = await api('/api/plugins');
+    if(!r.length) { list.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px">No plugins yet. Add your first plugin above.</div>'; return; }
+    list.innerHTML = r.map(p=>\`
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <strong>\${p.name}</strong>
+            <span style="background:var(--bg3);color:var(--muted);font-size:11px;padding:2px 8px;border-radius:6px;margin-left:8px">\${p.language}</span>
+          </div>
+          <button class="btn-sm" style="background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;font-size:11px" onclick="deletePlugin('\${p.id}')">Remove</button>
+        </div>
+        <div style="font-family:monospace;font-size:11px;color:var(--muted);background:var(--bg3);border-radius:6px;padding:8px;white-space:pre-wrap;overflow:hidden;max-height:80px">\${p.code.slice(0,300)}\${p.code.length>300?'...':''}</div>
+      </div>
+    \`).join('');
+  } catch(e) { list.innerHTML='<div style="color:#f87171">Failed to load plugins</div>'; }
+}
+
+async function addPlugin() {
+  const name = document.getElementById('plugin-name').value.trim();
+  const code = document.getElementById('plugin-code').value.trim();
+  const language = document.getElementById('plugin-lang').value;
+  if(!name||!code) { toast('Enter a name and code/prompt','error'); return; }
+  const r = await api('/api/plugins','POST',{name,code,language});
+  toast('Plugin "'+r.name+'" added — JARVIS will use it in all responses');
+  document.getElementById('plugin-name').value='';
+  document.getElementById('plugin-code').value='';
+  loadPlugins();
+}
+
+async function deletePlugin(id) {
+  await api('/api/plugins','DELETE',{id});
+  toast('Plugin removed');
+  loadPlugins();
+}
+
+async function uploadPluginFile(input) {
+  const file = input.files[0];
+  if(!file) return;
+  toast('Reading '+file.name+'...');
+  const text = await file.text().catch(()=>null);
+  if(text) {
+    document.getElementById('plugin-name').value = file.name;
+    document.getElementById('plugin-code').value = text.slice(0,10000);
+    document.getElementById('plugin-lang').value = file.name.endsWith('.py')?'python':file.name.endsWith('.json')?'json':'javascript';
+    toast('File loaded — review and click Add Plugin');
+  }
+}
+
+// ── ERRORS ────────────────────────────────────────────────────────────────────
+async function loadErrors() {
+  const list = document.getElementById('errors-list');
+  const analysisDiv = document.getElementById('error-analysis');
+  if(!list) return;
+  try {
+    const r = await api('/api/errors');
+    const {errors, analysis} = r;
+    
+    if(analysis) {
+      const color = analysis.recommendation==='critical'?'#7f1d1d':analysis.recommendation==='warning'?'#78350f':'#14532d';
+      const textColor = analysis.recommendation==='critical'?'#fca5a5':analysis.recommendation==='warning'?'#fde68a':'#86efac';
+      analysisDiv.innerHTML = \`<div style="background:\${color};border:1px solid \${textColor}33;border-radius:10px;padding:14px;margin-bottom:16px;color:\${textColor}">
+        <strong>Brain Analysis: \${analysis.recommendation.toUpperCase()}</strong><br>
+        \${analysis.total} errors in last hour · Most affected: \${Object.entries(analysis.byEndpoint||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>k+' ('+v+')').join(', ')}
+      </div>\`;
+    } else {
+      analysisDiv.innerHTML = '<div style="background:#14532d;border:1px solid #16a34a;border-radius:10px;padding:14px;margin-bottom:16px;color:#86efac">✅ No errors in the last hour — all systems healthy</div>';
+    }
+    
+    if(!errors.length) { list.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px">No errors recorded</div>'; return; }
+    list.innerHTML = errors.map(err=>\`
+      <div style="background:var(--bg2);border:1px solid #7f1d1d;border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <strong style="color:#f87171">\${err.endpoint||'unknown'}</strong>
+          <span style="color:var(--muted);font-size:11px">\${new Date(err.ts).toLocaleString()}</span>
+        </div>
+        <div style="color:var(--muted);font-family:monospace;font-size:11px">\${err.error||''}</div>
+      </div>
+    \`).join('');
+  } catch(e) { list.innerHTML='<div style="color:#f87171">Failed to load errors</div>'; }
+}
+
+async function triggerRepair() {
+  toast('Running self-repair...');
+  const r = await api('/api/self-repair','POST',{});
+  if(r.repairs?.length) { toast('✅ Repairs: '+r.repairs.join(', '),'success'); }
+  else { toast('System healthy — no repairs needed'); }
+  loadErrors();
+}
+
+// ── TAB HOOK: load data when tab opens ────────────────────────────────────────
+const _origShowTab = typeof showTab==='function' ? showTab : null;
+function showTab(t) {
+  if(_origShowTab) _origShowTab(t);
+  if(t==='plugins') setTimeout(loadPlugins,100);
+  if(t==='errors') setTimeout(loadErrors,100);
+}
+
 </script>
 </body>
 </html>
@@ -1392,7 +1616,7 @@ async function handleAPI(path, req, e) {
   const uid = "prime_essentials";
   if (path === "/api/status") {
     const [ps, ts, mi, li] = await Promise.all([e.KV.list({ prefix: "project:" }), e.KV.list({ prefix: "task:" }), e.KV.list({ prefix: "mem:" }), e.KV.list({ prefix: "log:" })]);
-    return cors(new Response(JSON.stringify({ version: VERSION, status: "online", projects: ps.keys.length, tasks: ts.keys.length, memory: mi.keys.length, logs: li.keys.length, agents: Object.keys(AGENTS).length, models: OR_MODELS.length + 1, apps: APP_COUNT }), { headers: { "Content-Type": "application/json" } }));
+    return cors(new Response(JSON.stringify({ version: VERSION, status: "online", projects: ps.keys.length, tasks: ts.keys.length, memory: mi.keys.length, logs: li.keys.length, agents: Object.keys(AGENTS).length, models: OR_MODELS.length + 1, apps: 102 }), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/projects" && req.method === "GET") {
     const list = await e.KV.list({ prefix: "project:" });
@@ -1463,6 +1687,31 @@ async function handleAPI(path, req, e) {
   }
   if (path === "/api/apps") {
     return cors(new Response(JSON.stringify(APP_CATALOG), { headers: { "Content-Type": "application/json" } }));
+  }
+  if (path === "/api/plugins") {
+    if(req.method==="GET") {
+      const plugins = JSON.parse(await e.KV.get('system:plugins')||'[]');
+      return cors(new Response(JSON.stringify(plugins),{headers:{"Content-Type":"application/json"}}));
+    }
+    if(req.method==="POST") {
+      const body = await req.json().catch(()=>({}));
+      const plugins = JSON.parse(await e.KV.get('system:plugins')||'[]');
+      const plugin = {id:crypto.randomUUID(), name:body.name||'Plugin '+Date.now(), code:body.code||'', language:body.language||'text', created:Date.now()};
+      plugins.unshift(plugin);
+      await e.KV.put('system:plugins', JSON.stringify(plugins.slice(0,20)));
+      return cors(new Response(JSON.stringify(plugin),{headers:{"Content-Type":"application/json"}}));
+    }
+    if(req.method==="DELETE") {
+      const body = await req.json().catch(()=>({}));
+      const plugins = JSON.parse(await e.KV.get('system:plugins')||'[]');
+      const filtered = plugins.filter(p=>p.id!==body.id);
+      await e.KV.put('system:plugins', JSON.stringify(filtered));
+      return cors(new Response(JSON.stringify({ok:true}),{headers:{"Content-Type":"application/json"}}));
+    }
+  }
+  if (path === "/api/learnings") {
+    const learnings = JSON.parse(await e.KV.get('brain:learnings')||'[]');
+    return cors(new Response(JSON.stringify(learnings.slice(0,50)),{headers:{"Content-Type":"application/json"}}));
   }
   if (path === "/api/health-check") {
     return cors(new Response(JSON.stringify(await BRAIN_healthCheck(e)),{headers:{"Content-Type":"application/json"}}));
@@ -1625,7 +1874,7 @@ var index_default = { async fetch(req, e) {
     }
     return new Response("ok");
   }
-  if (path === "/health") return new Response(JSON.stringify({ status: "Jarvis 4.0", version: VERSION, ts: new Date().toISOString(), github: !!e.GITHUB_TOKEN }), { headers: { "Content-Type": "application/json" } });
+  if (path === "/health") return new Response(JSON.stringify({ status: "Jarvis 5.0", version: VERSION, ts: new Date().toISOString(), github: !!e.GITHUB_TOKEN }), { headers: { "Content-Type": "application/json" } });
   return new Response("Not found", { status: 404 });
 }, async scheduled(event, e, ctx) {
   ctx.waitUntil(handleCron(e));
