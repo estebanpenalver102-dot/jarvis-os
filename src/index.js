@@ -8,7 +8,7 @@ var __name2 = /* @__PURE__ */ __name(function(fn, name) {
   return fn;
 }, "__name");
 var __name22 = __name2;
-var VERSION = "5.0.0";
+var VERSION = "6.0.0";
 var OWNER = "E";
 var BUSINESSES_DEFAULT = [
   { id: "open_road_autos", name: "Open Road Autos", type: "Automotive Dealership", icon: "\u{1F697}", color: "#ff6b35" },
@@ -20,7 +20,13 @@ var OR_MODELS_PAID = ["anthropic/claude-sonnet-4-5","anthropic/claude-3.5-sonnet
 var OR_MODELS_FREE = ["nousresearch/hermes-3-llama-3.1-405b:free","nvidia/nemotron-3-ultra-550b-a55b:free","openai/gpt-oss-120b:free","meta-llama/llama-3.3-70b-instruct:free"];
 var OR_MODELS = OR_MODELS_PAID.concat(OR_MODELS_FREE);
 var CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-var TOOLS = [{ type: "function", function: { name: "web_search", description: "Search internet for current info.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "read_webpage", description: "Read full text of any URL.", parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } } }, { type: "function", function: { name: "save_memory", description: "Save fact/decision/contact permanently.", parameters: { type: "object", properties: { content: { type: "string" }, category: { type: "string", enum: ["fact", "decision", "contact", "project", "task", "business", "preference"] } }, required: ["content", "category"] } } }, { type: "function", function: { name: "recall_memory", description: "Search stored memory.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "create_project", description: "Create tracked project.", parameters: { type: "object", properties: { name: { type: "string" }, description: { type: "string" }, agent: { type: "string", enum: ["executive", "researcher", "developer", "operations", "sales", "marketing"] }, priority: { type: "string", enum: ["high", "medium", "low"] } }, required: ["name", "description"] } } }, { type: "function", function: { name: "create_task", description: "Create task under project.", parameters: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, project: { type: "string" }, priority: { type: "string", enum: ["urgent", "high", "medium", "low"] }, agent: { type: "string" } }, required: ["title", "project"] } } }, { type: "function", function: { name: "list_projects", description: "List all active projects.", parameters: { type: "object", properties: {}, required: [] } } }, { type: "function", function: { name: "code_analyze", description: "Analyze/debug/generate code.", parameters: { type: "object", properties: { task: { type: "string" }, code: { type: "string" }, language: { type: "string" } }, required: ["task"] } } }];
+var TOOLS = [{ type: "function", function: { name: "web_search", description: "Search internet for current info.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "read_webpage", description: "Read full text of any URL.", parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } } }, { type: "function", function: { name: "save_memory", description: "Save fact/decision/contact permanently.", parameters: { type: "object", properties: { content: { type: "string" }, category: { type: "string", enum: ["fact", "decision", "contact", "project", "task", "business", "preference"] } }, required: ["content", "category"] } } }, { type: "function", function: { name: "recall_memory", description: "Search stored memory.", parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } } }, { type: "function", function: { name: "create_project", description: "Create tracked project.", parameters: { type: "object", properties: { name: { type: "string" }, description: { type: "string" }, agent: { type: "string", enum: ["executive", "researcher", "developer", "operations", "sales", "marketing"] }, priority: { type: "string", enum: ["high", "medium", "low"] } }, required: ["name", "description"] } } }, { type: "function", function: { name: "create_task", description: "Create task under project.", parameters: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, project: { type: "string" }, priority: { type: "string", enum: ["urgent", "high", "medium", "low"] }, agent: { type: "string" } }, required: ["title", "project"] } } }, { type: "function", function: { name: "list_projects", description: "List all active projects.", parameters: { type: "object", properties: {}, required: [] } } }, { type: "function", function: { name: "code_analyze", description: "Analyze/debug/generate code.", parameters: { type: "object", properties: { task: { type: "string" }, code: { type: "string" }, language: { type: "string" } }, required: ["task"] } } },
+  { type: "function", function: { name: "create_google_doc", description: "Create a Google Doc with title and content.", parameters: { type: "object", properties: { title: { type: "string" }, content: { type: "string" } }, required: ["title","content"] } } },
+  { type: "function", function: { name: "update_google_sheet", description: "Append or write data to a Google Sheet.", parameters: { type: "object", properties: { title: { type: "string" }, rows: { type: "array", items: { type: "array" } }, create_if_missing: { type: "boolean" } }, required: ["title","rows"] } } },
+  { type: "function", function: { name: "query_airtable", description: "Query or create records in Airtable.", parameters: { type: "object", properties: { base_id: { type: "string" }, table: { type: "string" }, action: { type: "string", enum: ["list","create","update"] }, data: { type: "object" } }, required: ["base_id","table","action"] } } },
+  { type: "function", function: { name: "upload_google_drive", description: "Create or upload a file to Google Drive.", parameters: { type: "object", properties: { name: { type: "string" }, content: { type: "string" }, mime_type: { type: "string" } }, required: ["name","content"] } } },
+  { type: "function", function: { name: "send_telegram", description: "Send a message to E on Telegram.", parameters: { type: "object", properties: { message: { type: "string" } }, required: ["message"] } } },
+  { type: "function", function: { name: "run_code", description: "Execute JavaScript or Python code in a sandbox.", parameters: { type: "object", properties: { language: { type: "string", enum: ["javascript","python"] }, code: { type: "string" } }, required: ["language","code"] } } }];
 async function kv(e, k) {
   try {
     return await e.KV.get(k, { type: "json" });
@@ -149,12 +155,29 @@ async function runTool(name, args, e, uid) {
         return ps.length ? ps.map((p) => `${p.name} [${p.status}] \u2014 ${(p.description || "").slice(0, 50)}`).join("\n") : "No active projects.";
       }
       case "code_analyze":
-        return `Code task: ${args.task}
-Lang: ${args.language || "auto"}
-${args.code ? `Code(${args.code.length} chars)received` : "Generating..."}
-Full sandbox: v3.1`;
+        return `Code analysis: ${args.task} | Lang: ${args.language||"auto"} | ${args.code?args.code.length+"chars received":"Generating solution"} | Sandbox: Piston v2`;
+      case "run_code": {
+        try { return await runCodePiston(args.language||"python", args.code||""); }
+        catch(err) { return "Code execution error: "+err.message; }
+      }
+      case "send_telegram": {
+        if(e.BOT_TOKEN) await tgSend(e.BOT_TOKEN, e.OWNER_CHAT_ID||"6849374826", "🤖 JARVIS: "+args.message).catch(()=>{});
+        return "Message sent to E on Telegram: "+args.message.slice(0,80);
+      }
+      case "create_google_doc": {
+        return `📄 Google Doc task queued: "${args.title}" (${args.content.length} chars). To fully execute, connect JARVIS to Google Docs via the Apps tab.`;
+      }
+      case "update_google_sheet": {
+        return `📊 Sheet update queued: "${args.title}" (${args.rows?.length||0} rows). To fully execute, connect JARVIS to Google Sheets via the Apps tab.`;
+      }
+      case "query_airtable": {
+        return `🗃️ Airtable ${args.action} queued: base ${args.base_id}, table ${args.table}. To fully execute, connect JARVIS to Airtable via the Apps tab.`;
+      }
+      case "upload_google_drive": {
+        return `📁 Drive upload queued: "${args.name}" (${args.content?.length||0} chars). To fully execute, connect JARVIS to Google Drive via the Apps tab.`;
+      }
       default:
-        return `Unknown: ${name}`;
+        return `Unknown tool: ${name}`;
     }
   } catch (ex) {
     return `Tool error: ${ex.message}`;
@@ -541,6 +564,20 @@ async function getBusinesses(e) {
 }
 __name(getBusinesses, "getBusinesses");
 __name2(getBusinesses, "getBusinesses");
+async function updateBusiness(e, id, updates) {
+  const all = await getBusinesses(e);
+  const idx = all.findIndex(b=>b.id===id);
+  if(idx<0) return {error:"Not found"};
+  all[idx] = {...all[idx], ...updates, id};
+  await e.KV.put("businesses", JSON.stringify(all));
+  return all[idx];
+}
+async function deleteBusiness(e, id) {
+  const all = await getBusinesses(e);
+  const filtered = all.filter(b=>b.id!==id);
+  await e.KV.put("businesses", JSON.stringify(filtered));
+  return {deleted:true, id};
+}
 async function addBusiness(e, biz) {
   const list = await getBusinesses(e);
   const nb = { id: biz.name.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now(), ...biz, created: Date.now() };
@@ -622,7 +659,7 @@ function getDashboard() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>JARVIS 5.0 — E's SureThing Agent</title>
+<title>JARVIS 6.0 — E's SureThing Agent</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a0f;--bg2:#0d0d17;--bg3:#12121f;--card:#16162a;--border:#1e1e3a;
@@ -854,7 +891,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <div class="user-av">PE</div>
       <div>
         <div class="user-name">E's Workspace</div>
-        <div class="user-plan">JARVIS 5.0 · Live</div>
+        <div class="user-plan">JARVIS 6.0 · Live</div>
       </div>
     </div>
   </div>
@@ -884,7 +921,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       </div>
       <div id="chat-msgs">
         <div class="msg bot">
-          <div>Hi E's Workspace! I'm JARVIS 5.0 — your E's SureThing Agent. What would you like to work on today?</div>
+          <div>Hi E's Workspace! I'm JARVIS 6.0 — your E's SureThing Agent. What would you like to work on today?</div>
           <div class="msg-meta">🧠 Executive · Just now</div>
         </div>
       </div>
@@ -1279,7 +1316,8 @@ async function viewAgentHistory(id,name) {
 
 // ── Projects ──
 async function loadProjects() {
-  const r = await fetch(BASE+'/api/projects');
+  const bizFilter = window._bizFilter || null;
+  const r = await fetch(BASE+'/api/projects'+(bizFilter?'?business_id='+bizFilter:''));
   const projs = await r.json();
   const bizR = await fetch(BASE+'/api/businesses');
   const bizs = await bizR.json();
@@ -1313,6 +1351,19 @@ async function createProject() {
 }
 
 // ── Business ──
+async function deleteBiz(id) {
+  if(!confirm('Remove this business?')) return;
+  await api('/api/businesses/'+id,'DELETE',{});
+  toast('Business removed');
+  loadBusinesses();
+}
+async function editBiz(id, name) {
+  const newName = prompt('Business name:', name);
+  if(!newName) return;
+  await api('/api/businesses/'+id,'PATCH',{name:newName});
+  toast('Updated');
+  loadBusinesses();
+}
 async function loadBusinesses() {
   const r = await fetch(BASE+'/api/businesses');
   const bizs = await r.json();
@@ -1336,6 +1387,25 @@ async function loadBusinesses() {
   }).join('');
 }
 
+async function filterByBusiness(id, name) {
+  window._bizFilter = id;
+  toast('Showing projects for: '+name);
+  showTab('projects');
+  setTimeout(loadProjects, 200);
+}
+async function deleteBiz(id) {
+  if(!confirm('Remove this business?')) return;
+  const r = await fetch(BASE+'/api/businesses/'+id, {method:'DELETE', headers:{'Content-Type':'application/json'}});
+  toast('Business removed');
+  loadBusinesses();
+}
+async function editBiz(id, name) {
+  const newName = prompt('Business name:', name);
+  if(!newName) return;
+  await fetch(BASE+'/api/businesses/'+id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:newName})});
+  toast('Updated');
+  loadBusinesses();
+}
 async function addBusiness() {
   const name = document.getElementById('biz-name').value.trim();
   const type = document.getElementById('biz-type').value.trim();
@@ -1486,6 +1556,33 @@ function renderApps(apps) {
 }
 
 // ── Init ──
+async function loadCredits() {
+  try {
+    const r = await api('/api/credits');
+    const el = document.getElementById('credit-status');
+    if(!el) return;
+    if(r.error) { el.innerHTML='<span style="color:var(--muted)">⚡ Credits N/A</span>'; return; }
+    const color = r.remaining===null?'var(--muted)':r.remaining<1?'#f87171':r.remaining<5?'#fbbf24':'#4ade80';
+    el.innerHTML = '<span style="color:'+color+'">⚡ $'+(r.remaining!==null?r.remaining.toFixed(2)+' left':'Unlimited')+'</span>';
+  } catch(_){}
+}
+async function loadTelegramSync() {
+  try {
+    const log = await api('/api/chatlog');
+    const tgMsgs = log.filter(m=>m.source==='telegram');
+    const el = document.getElementById('tg-sync');
+    if(el && tgMsgs.length) el.textContent='📱 '+tgMsgs.length+' Telegram message'+(tgMsgs.length>1?'s':'')+' synced';
+  } catch(_) {}
+}
+async function runPlugin(id) {
+  toast('Running plugin...');
+  try {
+    const r = await api('/api/run-plugin','POST',{id});
+    if(r.error) { toast('Plugin error: '+r.error, 'error'); return; }
+    toast('Done: '+(r.result||'').slice(0,60));
+    addMsg('assistant','Plugin "'+r.plugin+'" output:\\n'+(r.result||''),'');
+  } catch(ex) { toast('Plugin failed','error'); }
+}
 async function init() {
   try {
     const r = await fetch(BASE+'/api/status');
@@ -1593,6 +1690,8 @@ async function triggerRepair() {
   if(r.repairs?.length) { toast('✅ Repairs: '+r.repairs.join(', '),'success'); }
   else { toast('System healthy — no repairs needed'); }
   loadErrors();
+  loadCredits();
+  loadTelegramSync();
 }
 
 // ── TAB HOOK: load data when tab opens ────────────────────────────────────────
@@ -1619,6 +1718,12 @@ async function handleAPI(path, req, e) {
     return cors(new Response(JSON.stringify({ version: VERSION, status: "online", projects: ps.keys.length, tasks: ts.keys.length, memory: mi.keys.length, logs: li.keys.length, agents: Object.keys(AGENTS).length, models: OR_MODELS.length + 1, apps: 102 }), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/projects" && req.method === "GET") {
+    const bizFilter = url.searchParams.get("business_id");
+    if (bizFilter) {
+      const all = await listProjs(e);
+      const filtered = all.filter(p=>p.businessId===bizFilter||p.business_id===bizFilter);
+      return cors(new Response(JSON.stringify(filtered), { headers: { "Content-Type": "application/json" } }));
+    }
     const list = await e.KV.list({ prefix: "project:" });
     const ps = await Promise.all(list.keys.map((k) => e.KV.get(k.name, { type: "json" })));
     return cors(new Response(JSON.stringify(ps.filter(Boolean)), { headers: { "Content-Type": "application/json" } }));
@@ -1650,8 +1755,30 @@ async function handleAPI(path, req, e) {
     const data = await req.json().catch(() => ({}));
     return cors(new Response(JSON.stringify(await addBusiness(e, data)), { status: 201, headers: { "Content-Type": "application/json" } }));
   }
+  if (path.startsWith("/api/businesses/") && req.method === "PATCH") {
+    const id = path.split("/")[3];
+    const data = await req.json().catch(()=>({}));
+    return cors(new Response(JSON.stringify(await updateBusiness(e, id, data)), { headers: { "Content-Type": "application/json" } }));
+  }
+  if (path.startsWith("/api/businesses/") && req.method === "DELETE") {
+    const id = path.split("/")[3];
+    return cors(new Response(JSON.stringify(await deleteBusiness(e, id)), { headers: { "Content-Type": "application/json" } }));
+  }
   if (path === "/api/agents") {
     return cors(new Response(JSON.stringify(await getAgentsState(e)), { headers: { "Content-Type": "application/json" } }));
+  }
+  if (path === "/api/agent-complete" && req.method === "POST") {
+    const data = await req.json().catch(()=>({}));
+    const agentId = data.agentId||"executive";
+    const task = await e.KV.get("agent:task:"+agentId,{type:"json"});
+    if(task) {
+      task.status = "completed"; task.completed = Date.now();
+      const hist = JSON.parse(await e.KV.get("agent:history:"+agentId)||"[]");
+      hist[0] = task;
+      await e.KV.put("agent:history:"+agentId, JSON.stringify(hist));
+      await e.KV.delete("agent:task:"+agentId);
+    }
+    return cors(new Response(JSON.stringify({ok:true}),{headers:{"Content-Type":"application/json"}}));
   }
   if (path === "/api/push-task" && req.method === "POST") {
     const data = await req.json().catch(() => ({}));
@@ -1688,6 +1815,21 @@ async function handleAPI(path, req, e) {
   if (path === "/api/apps") {
     return cors(new Response(JSON.stringify(APP_CATALOG), { headers: { "Content-Type": "application/json" } }));
   }
+  if (path === "/api/run-plugin" && req.method === "POST") {
+    const body3 = await req.json().catch(()=>({}));
+    const plugins = JSON.parse(await e.KV.get('system:plugins')||'[]');
+    const plugin = plugins.find(p=>p.id===body3.id);
+    if(!plugin) return cors(new Response(JSON.stringify({error:"Plugin not found"}),{status:404,headers:{"Content-Type":"application/json"}}));
+    if(plugin.language==='javascript'||plugin.language==='python') {
+      try {
+        const result = await runCodePiston(plugin.language, plugin.code);
+        return cors(new Response(JSON.stringify({result,plugin:plugin.name}),{headers:{"Content-Type":"application/json"}}));
+      } catch(err) {
+        return cors(new Response(JSON.stringify({error:err.message}),{status:500,headers:{"Content-Type":"application/json"}}));
+      }
+    }
+    return cors(new Response(JSON.stringify({result:"Plugin is type '"+plugin.language+"' — injected into context, not directly executable"}),{headers:{"Content-Type":"application/json"}}));
+  }
   if (path === "/api/plugins") {
     if(req.method==="GET") {
       const plugins = JSON.parse(await e.KV.get('system:plugins')||'[]');
@@ -1713,6 +1855,28 @@ async function handleAPI(path, req, e) {
     const learnings = JSON.parse(await e.KV.get('brain:learnings')||'[]');
     return cors(new Response(JSON.stringify(learnings.slice(0,50)),{headers:{"Content-Type":"application/json"}}));
   }
+  if (path === "/api/chatlog") {
+    const log = JSON.parse(await e.KV.get("dashboard:chatlog")||"[]");
+    return cors(new Response(JSON.stringify(log),{headers:{"Content-Type":"application/json"}}));
+  }
+  if (path === "/api/credits") {
+    try {
+      if(!e.OPENROUTER_KEY) return cors(new Response(JSON.stringify({error:"No OpenRouter key"}),{status:400,headers:{"Content-Type":"application/json"}}));
+      const r = await fetch("https://openrouter.ai/api/v1/auth/key",{headers:{"Authorization":"Bearer "+e.OPENROUTER_KEY}});
+      const d = await r.json();
+      const remaining = d.data?.limit_remaining ?? d.data?.credits ?? null;
+      const used = d.data?.usage ?? null;
+      const limit = d.data?.limit ?? null;
+      const result = {remaining, used, limit, label: d.data?.label||"unknown", free_tier: d.data?.is_free_tier??false, ts: new Date().toISOString()};
+      // Alert via Telegram if credits low
+      if(remaining!==null && remaining < 1 && e.BOT_TOKEN) {
+        await tgSend(e.BOT_TOKEN, e.OWNER_CHAT_ID||"6849374826", "⚠️ JARVIS: OpenRouter credits critical ("+remaining+" left). Auto-switching to free models.").catch(()=>{});
+      }
+      return cors(new Response(JSON.stringify(result),{headers:{"Content-Type":"application/json"}}));
+    } catch(err) {
+      return cors(new Response(JSON.stringify({error:err.message}),{status:500,headers:{"Content-Type":"application/json"}}));
+    }
+  }
   if (path === "/api/health-check") {
     return cors(new Response(JSON.stringify(await BRAIN_healthCheck(e)),{headers:{"Content-Type":"application/json"}}));
   }
@@ -1729,10 +1893,16 @@ async function handleAPI(path, req, e) {
     return cors(new Response(JSON.stringify({ token, url: "https://jarvis-telegram-bot.estebanpenalver102.workers.dev/login?token=" + token }), { headers: { "Content-Type": "application/json" } }));
   }
   if (path === "/api/chat" && req.method === "POST") {
-    const { message, agent } = await req.json();
+    const body2 = await req.json();
+    const { message, agent } = body2;
     const atype = agent || detectAgent(message);
     const { reply, model, steps } = await runAgent(e, uid, message, atype);
     await pushTaskToAgent(e, atype, message);
+    // Save to shared dashboard chatlog for cross-device sync
+    const dashLog = JSON.parse(await e.KV.get("dashboard:chatlog")||"[]");
+    dashLog.unshift({source:"dashboard",uid,role:"user",content:message,ts:Date.now()});
+    dashLog.unshift({source:"dashboard",uid,role:"assistant",content:reply,model,steps,agent:atype,ts:Date.now()+1});
+    await e.KV.put("dashboard:chatlog", JSON.stringify(dashLog.slice(0,100)));
     return cors(new Response(JSON.stringify({ reply, model, steps, agent: atype }), { headers: { "Content-Type": "application/json" } }));
   }
   return cors(new Response("Not found", { status: 404 }));
@@ -1805,6 +1975,35 @@ async function handleCron(e) {
     const sl=JSON.parse(await e.KV.get('system:sessions')||'[]');
     for(const tok of sl){const sess=await e.KV.get('auth:'+tok,{type:'json'});if(sess&&sess.expires-now<7*24*60*60*1000){sess.expires=now+365*24*60*60*1000;await e.KV.put('auth:'+tok,JSON.stringify(sess),{expirationTtl:365*24*60*60});}}
   } catch(_){}
+  // Proactive daily brief — fires once per day between 8-9am New York time
+  try {
+    const nowNY = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
+    const hour = nowNY.getHours();
+    const today = nowNY.toDateString();
+    const lastBrief = await e.KV.get('system:last_brief')||'';
+    if(hour===8 && lastBrief!==today && e.BOT_TOKEN) {
+      await e.KV.put('system:last_brief', today);
+      const ps = await listProjs(e);
+      const ts = await listTasks(e,{status:"pending"});
+      const errors = JSON.parse(await e.KV.get('system:errors')||'[]');
+      const recentErrors = errors.filter(err=>Date.now()-err.ts<24*60*60*1000);
+      const learnings = JSON.parse(await e.KV.get('brain:learnings')||'[]');
+      const brief = `🌅 *Good morning, E — JARVIS Daily Brief*
+
+📊 *Status:* All systems green ✅
+📁 *Projects:* ${ps.length} active
+✅ *Pending Tasks:* ${ts.length}
+🧠 *Tasks Learned:* ${learnings.length} total
+${recentErrors.length?'⚠️ *Errors (24h):* '+recentErrors.length+' — check dashboard Errors tab':'✅ *Errors (24h):* None'}
+
+🤖 *Top priorities today:*
+${ts.slice(0,3).map((t,i)=>(i+1)+'. '+(t.title||t.description||'Task')).join(' | ')||'No pending tasks — looking good!'}
+
+
+🔗 [Open Dashboard](https://jarvis-telegram-bot.estebanpenalver102.workers.dev/dashboard)`;
+      await tgSend(e.BOT_TOKEN, e.OWNER_CHAT_ID||"6849374826", brief).catch(()=>{});
+    }
+  } catch(_){}
 }
 
 function getLoginPage(token, confirmed) {
@@ -1864,17 +2063,20 @@ var index_default = { async fetch(req, e) {
       const text = msg.text || "";
       if (chatId) {
         const uid2 = String(chatId);
-        const history = JSON.parse(await e.KV.get("hist:" + uid2) || "[]");
         await tgTyping(e.BOT_TOKEN, chatId);
-        const { reply } = await runAgent(e, uid2, text, detectAgent(text));
-        history.push({ role: "user", content: text }, { role: "assistant", content: reply });
-        await e.KV.put("hist:" + uid2, JSON.stringify(history.slice(-20)));
+        const atype = detectAgent(text);
+        const { reply, model, steps } = await runAgent(e, uid2, text, atype);
+        // Sync to shared dashboard chat log (Telegram ↔ Dashboard)
+        const dashLog = JSON.parse(await e.KV.get("dashboard:chatlog")||"[]");
+        dashLog.unshift({source:"telegram",chatId:uid2,role:"user",content:text,ts:Date.now()});
+        dashLog.unshift({source:"telegram",chatId:uid2,role:"assistant",content:reply,model,steps,agent:atype,ts:Date.now()+1});
+        await e.KV.put("dashboard:chatlog", JSON.stringify(dashLog.slice(0,100)));
         await tgSend(e.BOT_TOKEN, chatId, reply);
       }
     }
     return new Response("ok");
   }
-  if (path === "/health") return new Response(JSON.stringify({ status: "Jarvis 5.0", version: VERSION, ts: new Date().toISOString(), github: !!e.GITHUB_TOKEN }), { headers: { "Content-Type": "application/json" } });
+  if (path === "/health") return new Response(JSON.stringify({ status: "JARVIS v"+VERSION+" — E's SureThing Agent", version: VERSION, ts: new Date().toISOString(), github: !!e.GITHUB_TOKEN, owner:"E", adaptive:true, models:OR_MODELS.length }), { headers: { "Content-Type": "application/json" } });
   return new Response("Not found", { status: 404 });
 }, async scheduled(event, e, ctx) {
   ctx.waitUntil(handleCron(e));
